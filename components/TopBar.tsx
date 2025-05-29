@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useImperativeHandle, forwardRef, useEffect } from 'react';
 import { EntityType } from '../types';
 import { ENTITY_DISPLAY_NAMES } from '../constants';
@@ -111,7 +110,7 @@ export const TopBar = forwardRef<TopBarHandles, TopBarProps>((
 
   const handleCsvIndividualImportClick = (entityType: EntityType) => {
     setSelectedCsvEntityType(entityType);
-    csvFileInputRef.current?.click(); // This will trigger handleCsvFileChange
+    csvFileInputRef.current?.click(); 
     // setShowCsvEntityTypeSelector(false); // Already handled by useEffect or selection
   };
 
@@ -145,11 +144,17 @@ export const TopBar = forwardRef<TopBarHandles, TopBarProps>((
   return (
     <div className="bg-gray-200 dark:bg-gray-800 p-3 shadow-md flex items-center justify-between border-b border-gray-300 dark:border-gray-700 bg-transition">
       <div className="flex items-center">
-        <h1 className="text-xl font-semibold text-green-600 dark:text-green-400">FarmerChat AI v10.0</h1>
+        <div className="text-center">
+            <h1 className="text-md sm:text-lg font-semibold text-green-600 dark:text-green-400 leading-tight">
+                Gestor de Trabajos
+            </h1>
+            <h2 className="text-sm sm:text-md font-semibold text-green-600 dark:text-green-400 leading-tight">
+                Agro Aereo Roberts v1.0
+            </h2>
+        </div>
       </div>
       
       <div className="flex items-center space-x-1 sm:space-x-2 md:space-x-3">
-        {/* Offline Queue Indicator (Direct) */}
         {pendingOfflineRequestCount > 0 && (
             <div 
               className="flex items-center bg-yellow-500 text-yellow-900 dark:bg-yellow-400 dark:text-yellow-900 py-1 px-2 sm:px-3 rounded-md text-xs sm:text-sm transition-colors animate-pulse"
@@ -161,7 +166,6 @@ export const TopBar = forwardRef<TopBarHandles, TopBarProps>((
             </div>
           )}
 
-        {/* Database Operations Dropdown */}
         <DropdownMenu
           triggerButton={
             <button
@@ -176,8 +180,7 @@ export const TopBar = forwardRef<TopBarHandles, TopBarProps>((
         />
         <input type="file" ref={jsonFileInputRef} onChange={handleJsonFileChange} accept=".json" className="hidden" />
 
-        {/* Table Operations Dropdown */}
-        <div className="relative"> {/* Container for the Tables group and its specific dropdown */}
+        <div className="relative">
           <DropdownMenu
             triggerButton={
               <button
@@ -192,14 +195,12 @@ export const TopBar = forwardRef<TopBarHandles, TopBarProps>((
             menuItems={tableMenuItems}
             onClose={() => {
                 // Do not close entity selector if it was just opened by a menu item
-                // The click outside handler for entity selector will manage it.
             }}
           />
           {showCsvEntityTypeSelector && (
             <div 
               id="csv-entity-type-selector-dropdown"
               className="absolute right-0 sm:right-auto sm:left-0 mt-2 w-56 bg-white dark:bg-gray-700 rounded-md shadow-lg z-40 py-1 border dark:border-gray-600 max-h-60 overflow-y-auto"
-              // Basic positioning; might need adjustment based on actual layout / more robust library if precise control needed
               style={{ top: tablesGroupButtonRef.current ? tablesGroupButtonRef.current.offsetHeight + 5 : '100%'}} 
             >
               <p className="text-xs text-gray-500 dark:text-gray-400 px-3 py-1">Importar para:</p>
@@ -210,7 +211,7 @@ export const TopBar = forwardRef<TopBarHandles, TopBarProps>((
                   onClick={(e) => { 
                     e.preventDefault(); 
                     handleCsvIndividualImportClick(entity); 
-                    setShowCsvEntityTypeSelector(false); // Close after selection
+                    setShowCsvEntityTypeSelector(false);
                   }}
                   className="block px-3 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600"
                   role="menuitem"
@@ -224,7 +225,6 @@ export const TopBar = forwardRef<TopBarHandles, TopBarProps>((
         <input type="file" ref={multiCsvFileInputRef} onChange={handleMultiCsvFileChange} accept=".csv" multiple className="hidden" />
         <input type="file" ref={csvFileInputRef} onChange={handleCsvFileChange} accept=".csv" className="hidden" />
 
-        {/* Chat History Dropdown */}
         <DropdownMenu
           triggerButton={
             <button
@@ -239,7 +239,6 @@ export const TopBar = forwardRef<TopBarHandles, TopBarProps>((
         />
         <input type="file" ref={chatHistoryInputRef} onChange={handleChatHistoryFileChange} accept=".json" className="hidden" />
 
-        {/* Direct Controls */}
         <button
           onClick={onToggleInteractiveVoiceMode}
           className={`p-2 rounded-full transition-colors ${

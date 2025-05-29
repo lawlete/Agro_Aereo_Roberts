@@ -99,6 +99,12 @@ interface FullScreenDataViewModalProps extends FullScreenDataModalContent {
   entityTypeForHeaders?: EntityType; 
 }
 
+type SortDirection = 'ascending' | 'descending';
+interface SortConfig {
+    key: string | null;
+    direction: SortDirection;
+}
+
 export const FullScreenDataViewModal: React.FC<FullScreenDataViewModalProps> = ({
   isOpen,
   onClose,
@@ -109,11 +115,13 @@ export const FullScreenDataViewModal: React.FC<FullScreenDataViewModalProps> = (
   const [searchTerm, setSearchTerm] = useState('');
   const [zoomLevel, setZoomLevel] = useState(1); 
   const tableContainerRef = useRef<HTMLDivElement>(null);
+  const [sortConfig, setSortConfig] = useState<SortConfig>({ key: null, direction: 'ascending' });
 
   useEffect(() => {
     if (isOpen) {
       setSearchTerm('');
       setZoomLevel(1);
+      setSortConfig({ key: null, direction: 'ascending' }); // Reset sort on open
     }
   }, [isOpen, items, title]);
 
@@ -132,13 +140,51 @@ export const FullScreenDataViewModal: React.FC<FullScreenDataViewModalProps> = (
     );
   }, [items, searchTerm, columnKeysForTable]);
 
+  const sortedItems = useMemo(() => {
+    let sortableItems = [...filteredItems];
+    if (sortConfig.key) {
+      sortableItems.sort((a, b) => {
+        const aValue = a[sortConfig.key!];
+        const bValue = b[sortConfig.key!];
+
+        if (aValue == null && bValue == null) return 0;
+        if (aValue == null) return sortConfig.direction === 'ascending' ? -1 : 1;
+        if (bValue == null) return sortConfig.direction === 'ascending' ? 1 : -1;
+
+        if (typeof aValue === 'number' && typeof bValue === 'number') {
+          return sortConfig.direction === 'ascending' ? aValue - bValue : bValue - aValue;
+        }
+        
+        const strA = String(aValue).toLowerCase();
+        const strB = String(bValue).toLowerCase();
+
+        if (strA < strB) {
+          return sortConfig.direction === 'ascending' ? -1 : 1;
+        }
+        if (strA > strB) {
+          return sortConfig.direction === 'ascending' ? 1 : -1;
+        }
+        return 0;
+      });
+    }
+    return sortableItems;
+  }, [filteredItems, sortConfig]);
+
+  const handleRequestSort = (key: string) => {
+    let direction: SortDirection = 'ascending';
+    if (sortConfig.key === key && sortConfig.direction === 'ascending') {
+      direction = 'descending';
+    }
+    setSortConfig({ key, direction });
+  };
+
   if (!isOpen) return null;
 
   const handleZoomIn = () => setZoomLevel(prev => Math.min(prev + 0.1, 2)); 
   const handleZoomOut = () => setZoomLevel(prev => Math.max(prev - 0.1, 0.5)); 
 
   const handleDownloadCsvInternal = () => {
-    triggerCsvDownload(filteredItems, title, entityTypeForHeaders);
+    triggerCsvDownload(sortedItems, title, entityTypeForHeaders); // Use sortedItems for CSV
   };
   
   const getPrintableHTMLForTable = (targetElement: HTMLElement, pageTitle: string): string => {
@@ -161,8 +207,19 @@ export const FullScreenDataViewModal: React.FC<FullScreenDataViewModalProps> = (
         .dark\\:hover\\:bg-gray-550:hover, .dark\\:hover\\:bg-gray-200:hover { background-color: #f0f0f0 !important; }
         /* Sticky header removal for print */
         thead { position: static !important; }
+        /* Remove sort indicators for print */
+        th .sort-indicator { display: none !important; }
       </style>
     `;
+    // Clone header row and remove sort indicators for cleaner print
+    const headerRow = tableClone.querySelector('thead tr');
+    if (headerRow) {
+      headerRow.querySelectorAll('th').forEach(th => {
+        const indicator = th.querySelector('.sort-indicator');
+        if (indicator) indicator.remove();
+      });
+    }
+
     return `
       <!DOCTYPE html>
       <html>
@@ -263,7 +320,7 @@ export const FullScreenDataViewModal: React.FC<FullScreenDataViewModalProps> = (
 
 
   const handleDownloadPdf = () => {
-    if (!filteredItems || filteredItems.length === 0) {
+    if (!sortedItems || sortedItems.length === 0) { // Use sortedItems for PDF
       alert("No hay datos para exportar a PDF.");
       return;
     }
@@ -286,12 +343,12 @@ export const FullScreenDataViewModal: React.FC<FullScreenDataViewModalProps> = (
             return objectKey;
         });
       } else {
-        pdfDataKeys = getColumnOrderForDisplay(filteredItems);
+        pdfDataKeys = getColumnOrderForDisplay(sortedItems); // Use sortedItems for PDF columns
         pdfDisplayHeaders = pdfDataKeys.map(key => FIELD_DISPLAY_NAMES_ES[key] || formatHeaderForDisplay(key));
       }
       headRows = [pdfDisplayHeaders];
 
-      bodyRows = filteredItems.map(item => {
+      bodyRows = sortedItems.map(item => { // Use sortedItems for PDF rows
         return pdfDataKeys.map(key => {
           const rawValue = item[key];
           if (rawValue === null || rawValue === undefined || String(rawValue).toUpperCase() === 'NULL') return 'Sin Datos';
@@ -342,7 +399,7 @@ export const FullScreenDataViewModal: React.FC<FullScreenDataViewModalProps> = (
         {/* Toolbar */}
         <div className="flex items-center justify-between p-3 sm:p-4 border-b border-gray-300 dark:border-gray-700 flex-shrink-0">
           <h2 id="fullscreen-data-title" className="text-base sm:text-lg font-semibold text-green-600 dark:text-green-400 truncate pr-2 flex-shrink min-w-0">
-            {title} ({filteredItems.length} {filteredItems.length === 1 ? 'el.' : 'els.'})
+            {title} ({sortedItems.length} {sortedItems.length === 1 ? 'el.' : 'els.'})
           </h2>
           <div className="flex items-center space-x-1 sm:space-x-2 flex-wrap">
             <div className="flex items-center border border-gray-300 dark:border-gray-600 rounded-md p-1 my-1">
@@ -382,12 +439,14 @@ export const FullScreenDataViewModal: React.FC<FullScreenDataViewModalProps> = (
 
         {/* Content Area */}
         <div ref={tableContainerRef} className="flex-grow p-1 sm:p-2 overflow-auto" style={{ fontSize: `${zoomLevel * 100}%` }}>
-          {filteredItems.length > 0 ? (
+          {sortedItems.length > 0 ? (
             <DataTable 
-                items={filteredItems} 
+                items={sortedItems} 
                 columnOrder={columnKeysForTable}
                 formatValueFunction={formatDisplayValue}
                 formatHeaderFunction={formatHeaderForDisplay}
+                sortConfig={sortConfig}
+                onRequestSort={handleRequestSort}
             />
           ) : (
             <p className="text-center text-gray-500 dark:text-gray-400 italic mt-10">

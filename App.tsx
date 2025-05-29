@@ -142,12 +142,13 @@ const App: React.FC = () => {
         text.startsWith('Se corrigió la estructura') ||
         text.startsWith('Base de datos borrada exitosamente') ||
         text.startsWith('Si necesita una base de datos de prueba') ||
-        text.startsWith('Historial de chat') || // For history load/save messages
-        text.includes("solicitud encolada") || // For offline queue messages
+        text.startsWith('Historial de chat') || 
+        text.includes("solicitud encolada") || 
         text.includes("solicitudes pendientes") ||
-        text.includes("ubicación seleccionada") || // For File System Access API save
-        text.includes("Error de Configuración (API Key)") || // For API key error messages
-        text.includes("ha sido guardado") // For API key queue confirmation
+        text.includes("ubicación seleccionada") || 
+        text.includes("Error de Configuración (API Key)") || 
+        text.includes("ha sido guardado") ||
+        text.includes("¡Bienvenido al Gestor de Trabajos") // Catch new welcome message
     );
     if (!isInitialSystemMessage && showWelcomeBanner) {
         setShowWelcomeBanner(false);
@@ -227,7 +228,7 @@ const App: React.FC = () => {
       loadTestDatabase(true);
     }
     if (chatMessages.length === 0) {
-        addMessageToChat("¡Bienvenido a Gestor de Trabajos Agro Aereo Roberts AI! Escribe 'Ayuda' para ver ejemplos de comandos o utiliza los botones superiores para gestionar tus datos.", 'system');
+        addMessageToChat("¡Bienvenido al Gestor de Trabajos de Agro Aereo V1.0! Escribe 'Ayuda' para ver ejemplos de comandos o utiliza los botones superiores para gestionar tus datos.", 'system');
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); 
@@ -415,7 +416,6 @@ const App: React.FC = () => {
     let apiKey: string | undefined = undefined;
     let apiKeySource: string = '';
 
-    // 1. Try Vite's environment variable
     try {
         // @ts-ignore
         const viteApiKey = import.meta.env?.VITE_API_KEY;
@@ -427,7 +427,6 @@ const App: React.FC = () => {
         console.warn("Could not access import.meta.env for VITE_API_KEY. This is expected in non-Vite environments.", e);
     }
     
-    // 2. If Vite's key wasn't found or valid, try process.env
     if (!apiKey) {
         const processEnvApiKey = process.env.API_KEY;
         if (processEnvApiKey && processEnvApiKey !== "YOUR_GEMINI_API_KEY_PLACEHOLDER" && processEnvApiKey !== "AQUI_VA_TU_CLAVE_API_DE_GEMINI" && processEnvApiKey.trim() !== '') {
@@ -442,7 +441,6 @@ const App: React.FC = () => {
                              "La funcionalidad de IA no estará disponible. Contacte al administrador. Puede guardar su historial de chat actual.";
         console.error("API Key for Gemini is missing or is a placeholder. Checked import.meta.env.VITE_API_KEY and process.env.API_KEY.");
         addMessageToChat(errorMessage, "system", true);
-        // setIsLoading(false); // isLoading state is primarily for chat operations, not initial setup failure.
         return;
     }
 
@@ -581,7 +579,7 @@ const App: React.FC = () => {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `farmerChatDB_v5_backup_${new Date().toISOString().slice(0,10)}.json`;
+      a.download = `agro_roberts_db_backup_${new Date().toISOString().slice(0,10)}.json`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -632,7 +630,7 @@ const App: React.FC = () => {
 
     const historyData = JSON.stringify(chatMessages, null, 2);
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
-    const suggestedFilename = `farmerchat_historial_${timestamp}.json`;
+    const suggestedFilename = `agro_roberts_historial_${timestamp}.json`;
 
     // @ts-ignore
     if (window.showSaveFilePicker) {
@@ -652,7 +650,6 @@ const App: React.FC = () => {
         addMessageToChat(`Historial de chat guardado en: ${fileHandle.name}`, 'system');
         if (isInteractiveVoiceMode) speakText(`Historial de chat guardado en la ubicación seleccionada.`);
       } catch (err) {
-        // User likely cancelled the save dialog or an error occurred
         if ((err as Error).name !== 'AbortError') {
           console.error("Error guardando historial con File System Access API:", err);
           addMessageToChat(`Error al guardar historial: ${(err as Error).message}`, 'system', true);
@@ -662,7 +659,6 @@ const App: React.FC = () => {
         }
       }
     } else {
-      // Fallback for browsers that don't support showSaveFilePicker
       const blob = new Blob([historyData], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -698,7 +694,7 @@ const App: React.FC = () => {
             groupedData: msg.groupedData || undefined,
             rawLLMResponse: msg.rawLLMResponse || undefined,
             relatedOfflineRequestId: msg.relatedOfflineRequestId || undefined,
-            actionType: msg.actionType || undefined, // Include actionType
+            actionType: msg.actionType || undefined, 
           }));
 
           setChatMessages(typedHistory);
@@ -714,7 +710,7 @@ const App: React.FC = () => {
           if (showWelcomeBanner) setShowWelcomeBanner(false);
           addMessageToChat('Historial de chat cargado exitosamente.', 'system');
         } else {
-          throw new Error("Formato de archivo de historial inválido. Verifique que el archivo no esté corrupto y que sea un historial de Gestor de Trabajos Agro Aereo Roberts.");
+          throw new Error("Formato de archivo de historial inválido. Verifique que el archivo no esté corrupto y que sea un historial válido.");
         }
       } catch (err) {
         console.error("Error cargando historial de chat:", err);
@@ -750,8 +746,6 @@ const App: React.FC = () => {
 
     let displayableGroupedData = groupedData;
 
-    // Fallback: If action is LIST_ENTITIES and groupedData is missing/empty,
-    // but actionResponse.data is present and is an array, construct groupedData from it.
     if (action === 'LIST_ENTITIES' && 
         (!displayableGroupedData || displayableGroupedData.length === 0) && 
         entity && 
@@ -801,7 +795,6 @@ const App: React.FC = () => {
               ...prevDb,
               [entity]: [...entityArray, newEntityData]
             };
-            // Handle linked entities for Tasks
             if (entity === 'tasks') {
                 const task = newEntityData as Task;
                 if (task.machineryIds && task.machineryIds.length > 0) {
@@ -810,8 +803,6 @@ const App: React.FC = () => {
                             id: generateUUID(),
                             taskId: newId,
                             machineryId: machId,
-                            // hoursUsed: undefined, // Can be added later or by AI
-                            // notes: ''
                         });
                     });
                 }
@@ -821,8 +812,6 @@ const App: React.FC = () => {
                             id: generateUUID(),
                             taskId: newId,
                             personnelId: persId,
-                            // roleInTask: '',
-                            // hoursWorked: undefined
                         });
                     });
                 }
@@ -834,7 +823,6 @@ const App: React.FC = () => {
                             productInsumeId: detail.id,
                             quantityUsed: detail.quantityUsed,
                             unitUsed: detail.unitUsed,
-                            // applicationDetails: ''
                         });
                     });
                 }
@@ -871,7 +859,6 @@ const App: React.FC = () => {
         break;
       case 'LIST_ENTITIES':
       case 'GROUPED_QUERY':
-         // Data is already handled by addMessageToChat and setCurrentGroupedResults via displayableGroupedData
         break;
       case 'TOGGLE_VOICE_MODE':
         if (data && typeof (data as { enable: boolean }).enable === 'boolean') {
@@ -884,32 +871,20 @@ const App: React.FC = () => {
       case 'PROPOSE_OPTIONS':
       case 'CONFIRM_CREATION':
       case 'PROMPT_CREATE_MISSING_ENTITY':
-        // These actions are primarily informational or conversational, no direct DB op here.
-        // PROMPT_CREATE_MISSING_ENTITY might have pendingTaskData, but it's for the AI's next turn.
         break;
       default:
         console.warn("Acción LLM desconocida o no manejada:", action);
     }
     
-    // Handle follow-up action if present (e.g., after creating a missing entity)
     if (followUpAction && geminiService && chatSession) {
-        addMessageToChat('Procesando siguiente paso...', 'system'); // Indicate something is happening
-        // Simulate the follow-up action being processed by the "AI" (handleLLMAction)
-        // This avoids making another actual API call immediately if the followUpAction is self-contained.
-        // If followUpAction requires new user input or a new LLM turn, that's more complex.
-        // For now, assume followUpAction is a direct action like CONFIRM_CREATION or another PROMPT.
-        
-        // A small delay to make it seem like a new turn for UI updates
+        addMessageToChat('Procesando siguiente paso...', 'system'); 
         setTimeout(() => {
-            setIsLoading(true); // Show loading for the follow-up
-            handleLLMAction(followUpAction); // Recursive call, but for a different step
+            setIsLoading(true); 
+            handleLLMAction(followUpAction); 
             setIsLoading(false);
         }, 500);
 
-    } else if (!followUpAction && isInteractiveVoiceMode && !displayableGroupedData) { // Check displayableGroupedData
-        // If no follow-up and no data to speak, and voice mode is on, prompt for next command
-        // This check might need refinement.
-        // processSpeechQueue(); // This will trigger mic if conditions are met.
+    } else if (!followUpAction && isInteractiveVoiceMode && !displayableGroupedData) { 
     }
 
   }, [addMessageToChat, database, chatSession, isInteractiveVoiceMode, geminiService, processSpeechQueue, speakText, speakGroupedResults, toggleInteractiveVoiceMode, isFullScreenDataModalOpen]);
@@ -924,29 +899,25 @@ const App: React.FC = () => {
     const userMessageId = generateUUID();
     addMessageToChat(message, 'user', false, undefined, undefined, userMessageId);
     const loadingMessageId = generateUUID();
-    addMessageToChat('', 'ai', false, undefined, undefined, loadingMessageId); // Placeholder for AI loading
+    addMessageToChat('', 'ai', false, undefined, undefined, loadingMessageId); 
     setIsLoading(true);
 
     const currentDBStateString = JSON.stringify(database);
-
     const partsForThisTurn: Part[] = [];
-
-    // Part 1: Database Context (NO MOSTRAR AL USUARIO)
     partsForThisTurn.push({ text: `Contexto de Base de Datos (NO MOSTRAR AL USUARIO, USAR PARA REFERENCIA INTERNA):\n${currentDBStateString}` });
     
-    // Part 2: User's command (audio + text, or just text)
     if (audioBase64 && audioMimeType) {
         partsForThisTurn.push({ inlineData: { data: audioBase64, mimeType: audioMimeType } });
         if (message && message.trim() !== "" && message !== "Comando de voz grabado (procesando...)") {
            partsForThisTurn.push({ text: `\n\nComando del Usuario (puede ser transcripción de audio o texto directo):\n${message}` });
         }
-    } else { // Text-only message
+    } else { 
         partsForThisTurn.push({ text: `\n\nComando del Usuario:\n${message}` });
     }
 
     try {
       const response: GenerateContentResponse = await chatSession.sendMessage({ message: partsForThisTurn });
-      setChatMessages(prev => prev.filter(msg => msg.id !== loadingMessageId)); // Remove loading message
+      setChatMessages(prev => prev.filter(msg => msg.id !== loadingMessageId)); 
       
       const llmResponseText = response.text;
       const parsedAction = parseLLMResponse(llmResponseText);
@@ -959,36 +930,35 @@ const App: React.FC = () => {
       }
     } catch (error) {
       console.error("Error sending message to Gemini:", error);
-      setChatMessages(prev => prev.filter(msg => msg.id !== loadingMessageId)); // Remove loading message
+      setChatMessages(prev => prev.filter(msg => msg.id !== loadingMessageId)); 
 
       const classifiedError = classifyError(error);
       const errorMessageForUser = `Error al comunicarse con la IA: ${classifiedError.message}`;
       
       if (classifiedError.type === 'API_KEY_INVALID') {
-          addMessageToChat(classifiedError.message, 'system', true); // Shows detailed API key error
+          addMessageToChat(classifiedError.message, 'system', true); 
           if (isInteractiveVoiceMode) speakText(classifiedError.message);
 
-          // If chatSession exists (meaning initial setup wasn't blocked by API key), try to queue
           if (chatSession) { 
               const offlinePayload: OfflineRequestPayload = { messageText: message, audioBase64, audioMimeType };
               const queuedRequest = addRequestToQueueUtil(offlinePayload, classifiedError.type, classifiedError.message, setOfflineRequestQueue, userMessageId);
               
               const queueConfirmMsg = `Tu comando "${message.substring(0,30)}..." ha sido guardado. Se intentará procesar automáticamente cuando la configuración de la API Key sea corregida.`;
-              addMessageToChat(queueConfirmMsg, 'system', false, undefined, undefined, queuedRequest.id); // Not an error, but system info
+              addMessageToChat(queueConfirmMsg, 'system', false, undefined, undefined, queuedRequest.id); 
               if (isInteractiveVoiceMode) speakText(queueConfirmMsg);
           } else {
               addMessageToChat("El comando no pudo ser encolado porque el chat no está inicializado debido al error de API Key.", 'system', true);
               if (isInteractiveVoiceMode) speakText("El comando no pudo ser encolado.");
           }
       } else if (isQueuableError(classifiedError.type) && chatSession) {
-          addMessageToChat(errorMessageForUser, 'system', true); // Show generic error
+          addMessageToChat(errorMessageForUser, 'system', true); 
           if (isInteractiveVoiceMode) speakText(errorMessageForUser);
           
           const offlinePayload: OfflineRequestPayload = { messageText: message, audioBase64, audioMimeType };
           const queuedRequest = addRequestToQueueUtil(offlinePayload, classifiedError.type, classifiedError.message, setOfflineRequestQueue, userMessageId);
           
           const queueConfirmMsg = `⚠️ Tu mensaje "${message.substring(0, 30)}..." fue ENCOLADO. Razón: ${classifiedError.message.substring(0,50)}. Se reintentará automáticamente.`;
-          addMessageToChat(queueConfirmMsg, 'system', true, undefined, undefined, queuedRequest.id); // Mark as error to be noticeable
+          addMessageToChat(queueConfirmMsg, 'system', true, undefined, undefined, queuedRequest.id); 
           if (isInteractiveVoiceMode) speakText(`Tu mensaje fue encolado. ${classifiedError.message}`);
 
       } else {
@@ -1000,7 +970,6 @@ const App: React.FC = () => {
     }
   };
 
-  // Offline Queue Processing Logic
   const processQueue = useCallback(async () => {
     if (processingRequestIdRef.current || !navigator.onLine || !chatSession || !geminiService) {
       if (!navigator.onLine) console.log("Offline Queue: Paused, no connection.");
@@ -1010,7 +979,6 @@ const App: React.FC = () => {
 
     const pendingRequest = offlineRequestQueueRef.current.find(r => r.status === 'pending' || (r.status === 'processing' && r.id !== processingRequestIdRef.current));
     if (!pendingRequest) {
-      // console.log("Offline Queue: No pending requests to process.");
       return;
     }
     
@@ -1023,11 +991,11 @@ const App: React.FC = () => {
         pendingRequest,
         chatSession,
         database,
-        (requestId, responseText, llmResponse) => { // onSuccess
+        (requestId, responseText, llmResponse) => { 
             setOfflineRequestQueue(prev => prev.map(r => r.id === requestId ? { ...r, status: 'processed' } : r));
             const parsedAction = parseLLMResponse(responseText);
             if (parsedAction) {
-                handleLLMAction(parsedAction, requestId); // Pass requestId to link AI response to original offline item
+                handleLLMAction(parsedAction, requestId); 
             } else {
                 addMessageToChat(`Respuesta (de cola) no estructurada: ${responseText}`, 'ai', false, undefined, llmResponse.text, requestId);
                 if (isInteractiveVoiceMode) speakText(`Respuesta de solicitud encolada: ${responseText}`);
@@ -1035,9 +1003,9 @@ const App: React.FC = () => {
             processingRequestIdRef.current = null;
             addMessageToChat(`✅ Solicitud encolada "${pendingRequest.payload.messageText.substring(0, 30)}..." procesada con éxito.`, 'system', false, undefined, undefined, requestId);
             if (isInteractiveVoiceMode) speakText("Solicitud encolada procesada con éxito.");
-            setTimeout(processQueue, 1000); // Check for next item quickly
+            setTimeout(processQueue, 1000); 
         },
-        (requestId, errorInfo) => { // onFailure (retryable)
+        (requestId, errorInfo) => { 
             setOfflineRequestQueue(prev => prev.map(r => r.id === requestId ? { 
                 ...r, 
                 status: 'pending', 
@@ -1050,10 +1018,9 @@ const App: React.FC = () => {
             } : r));
             processingRequestIdRef.current = null;
             addMessageToChat(`⚠️ Reintento ${pendingRequest.attempts + 1} falló para "${pendingRequest.payload.messageText.substring(0, 30)}...". Razón: ${errorInfo.message}. Se reintentará más tarde.`, 'system', true, undefined, undefined, requestId);
-            // No need to speak this every time it fails and retries automatically, could be noisy.
-            setTimeout(processQueue, 1000); // Try next item in queue even if this one failed to avoid blocking
+            setTimeout(processQueue, 1000); 
         },
-        (requestId, errorInfo) => { // onPermanentFailure
+        (requestId, errorInfo) => { 
             setOfflineRequestQueue(prev => prev.map(r => r.id === requestId ? { 
                 ...r, 
                 status: 'failed',
@@ -1066,7 +1033,7 @@ const App: React.FC = () => {
             processingRequestIdRef.current = null;
             addMessageToChat(`❌ Solicitud encolada "${pendingRequest.payload.messageText.substring(0, 30)}..." falló permanentemente después de ${MAX_OFFLINE_REQUEST_ATTEMPTS} intentos. Razón: ${errorInfo.message}`, 'system', true, undefined, undefined, requestId);
             if (isInteractiveVoiceMode) speakText("Una solicitud encolada falló permanentemente.");
-            setTimeout(processQueue, 1000); // Check for next item
+            setTimeout(processQueue, 1000); 
         }
     );
   }, [chatSession, database, handleLLMAction, addMessageToChat, isInteractiveVoiceMode, speakText, geminiService, parseLLMResponse]);
@@ -1114,7 +1081,6 @@ const App: React.FC = () => {
     const containerRect = resizableContainerRef.current.getBoundingClientRect();
     let newWidthPercent = ((clientX - containerRect.left) / containerRect.width) * 100;
     
-    // Clamp width between 20% and 80%
     newWidthPercent = Math.max(20, Math.min(80, newWidthPercent));
     setChatPanelWidthPercent(newWidthPercent);
   }, [isResizing, isMdScreen]);

@@ -1,4 +1,5 @@
 
+
 import React, { useState, useRef, useEffect, useImperativeHandle, forwardRef, useCallback } from 'react';
 import { ChatMessage, Database, GroupedResult, EntityType } from '../types';
 import { MessageBubble } from './MessageBubble';
@@ -325,7 +326,7 @@ export const ChatPanel = forwardRef<ChatPanelHandles, ChatPanelProps>((
           rel="noopener noreferrer" 
           className="hover:text-green-500 dark:hover:text-green-400 transition-colors px-1"
         >
-          Manual de FarmerChat
+          Manual de uso de la app
         </a>
       </footer>
     </div>

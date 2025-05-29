@@ -1,5 +1,4 @@
-
-const CACHE_NAME = 'farmerchat-ia-cache-v1.1'; // Changed version to trigger update
+const CACHE_NAME = 'agro-roberts-gestor-cache-v1.0'; // Changed version to reflect new app
 const URLS_TO_CACHE = [
   '/',
   '/index.html',
@@ -52,9 +51,6 @@ self.addEventListener('fetch', event => {
     event.respondWith(
       fetch(event.request)
         .then(response => {
-          // If successful, cache it (optional, could lead to caching many versions of HTML)
-          // For simplicity, we won't dynamically cache all navigations here
-          // The initial cache of index.html handles the main app shell.
           return response;
         })
         .catch(() => {
@@ -73,15 +69,11 @@ self.addEventListener('fetch', event => {
     caches.match(event.request)
       .then(response => {
         if (response) {
-          // console.log('[ServiceWorker] Found in cache', event.request.url);
           return response; // Serve from cache
         }
-        // console.log('[ServiceWorker] Not in cache, fetching', event.request.url);
         return fetch(event.request).then(
           networkResponse => {
-            // Optionally, cache the new resource if it's not an opaque response (e.g. from CDN with CORS)
             if (networkResponse && networkResponse.status === 200 && networkResponse.type !== 'opaque' && (event.request.url.startsWith(self.location.origin) || event.request.url.includes('esm.sh'))) {
-              // console.log('[ServiceWorker] Caching new resource:', event.request.url);
               const responseToCache = networkResponse.clone();
               caches.open(CACHE_NAME)
                 .then(cache => {
@@ -92,8 +84,6 @@ self.addEventListener('fetch', event => {
           }
         ).catch(error => {
           console.error('[ServiceWorker] Fetch failed; returning offline page instead.', error);
-          // Optionally, return a generic offline fallback page or image
-          // For now, just let the browser handle the error if cache fails and network fails.
         });
       })
   );

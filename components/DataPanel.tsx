@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { Database, EntityType, GroupedResult, ALL_ENTITY_TYPES } from '../types';
 import { ENTITY_DISPLAY_NAMES } from '../constants';
@@ -38,7 +37,7 @@ export const DataPanel: React.FC<DataPanelProps> = ({ database, groupedResults, 
   const getPrintableHTMLForData = (targetElement: HTMLElement, title: string): string => {
     let contentHTML = '';
     const tableElement = targetElement.querySelector('table');
-    const entityDisplayContainer = targetElement.querySelector('.space-y-2'); // Used by EntityDisplay
+    const entityDisplayContainer = targetElement.querySelector('.space-y-2'); 
 
     if (tableElement) {
         const newTable = document.createElement('table');
@@ -46,17 +45,15 @@ export const DataPanel: React.FC<DataPanelProps> = ({ database, groupedResults, 
         const tbody = tableElement.querySelector('tbody');
         if (thead) newTable.appendChild(thead.cloneNode(true));
         if (tbody) newTable.appendChild(tbody.cloneNode(true));
-        // Remove any no-print elements from the cloned table headers/cells if necessary
         newTable.querySelectorAll('.no-print, .no-print-in-section').forEach(el => el.remove());
         contentHTML = newTable.outerHTML;
-    } else if (entityDisplayContainer && entityDisplayContainer.closest('.mb-4.p-3')) { // check if it's part of a grouped result
-        // For EntityDisplay within a grouped result: Reconstruct a simplified list
+    } else if (entityDisplayContainer && entityDisplayContainer.closest('.mb-4.p-3')) { 
         let listItemsHTML = '<ul>';
-        const items = targetElement.querySelectorAll('.bg-gray-200.dark\\:bg-gray-600.p-2.rounded.shadow'); // Each item's div in EntityDisplay
+        const items = targetElement.querySelectorAll('.bg-gray-200.dark\\:bg-gray-600.p-2.rounded.shadow'); 
         items.forEach(itemDiv => {
             const titleEl = itemDiv.querySelector('button > span.font-medium');
             let itemEntry = `<li><strong>${titleEl ? titleEl.textContent : 'Elemento'}</strong>: `;
-            const detailsDiv = itemDiv.querySelector('div[id^="details-"]'); // Assumes details are expanded
+            const detailsDiv = itemDiv.querySelector('div[id^="details-"]'); 
             if (detailsDiv) {
                 const detailEntries: string[] = [];
                 detailsDiv.querySelectorAll('div.grid.grid-cols-3').forEach(detailRow => {
@@ -76,9 +73,6 @@ export const DataPanel: React.FC<DataPanelProps> = ({ database, groupedResults, 
         listItemsHTML += '</ul>';
         contentHTML = listItemsHTML;
     } else {
-        // Fallback for other structures (e.g. full entity type list if EntityDisplay is used there)
-        // This part needs careful consideration if printing full entity lists from accordion is desired.
-        // For now, focus on grouped results.
         const clone = targetElement.cloneNode(true) as HTMLElement;
         clone.querySelectorAll('.no-print, .no-print-in-section, button, [aria-hidden="true"]').forEach(el => el.remove());
         contentHTML = clone.innerHTML;
@@ -136,12 +130,12 @@ export const DataPanel: React.FC<DataPanelProps> = ({ database, groupedResults, 
     printFrame.style.width = '0';
     printFrame.style.height = '0';
     printFrame.style.border = '0';
-    printFrame.style.zIndex = '99999'; // Ensure iframe is on top
+    printFrame.style.zIndex = '99999'; 
     printFrame.setAttribute('title', 'Contenido de Impresión');
     printFrame.setAttribute('aria-hidden', 'true');
     document.body.appendChild(printFrame);
 
-    let cleanupTimeoutId: number | null = null; // Changed NodeJS.Timeout to number
+    let cleanupTimeoutId: number | null = null; 
 
     try {
         const frameDoc = printFrame.contentWindow?.document;
@@ -153,7 +147,7 @@ export const DataPanel: React.FC<DataPanelProps> = ({ database, groupedResults, 
         frameDoc.write(printContentHTML);
         frameDoc.close();
 
-        cleanupTimeoutId = window.setTimeout(() => { // Explicitly use window.setTimeout
+        cleanupTimeoutId = window.setTimeout(() => { 
             if (document.body.contains(printFrame)) {
                 console.warn("iframe onload fallback: Removing print frame for", pageTitle);
                 document.body.removeChild(printFrame);
@@ -178,7 +172,7 @@ export const DataPanel: React.FC<DataPanelProps> = ({ database, groupedResults, 
                                 }
                             }, 1000);
                         }
-                    }, 100); // 100ms delay
+                    }, 100); 
                 } else {
                      throw new Error("iframe contentWindow is not available after load.");
                 }
@@ -206,14 +200,14 @@ export const DataPanel: React.FC<DataPanelProps> = ({ database, groupedResults, 
   return (
     <div className="w-full h-full bg-gray-100 dark:bg-gray-800 p-4 overflow-y-auto border-l border-gray-300 dark:border-gray-700 text-gray-800 dark:text-gray-200 bg-transition no-print">
       <h2 className="text-lg font-semibold mb-4 text-green-600 dark:text-green-400 border-b border-gray-300 dark:border-gray-600 pb-2">
-        Datos del Campo
+        Lista de Trabajos de Agro Aereo Roberts
       </h2>
       
       {groupedResults && groupedResults.length > 0 && (
         <div className="mb-6">
           <h3 className="text-md font-semibold mb-2 text-yellow-600 dark:text-yellow-400">Resultados de la Consulta:</h3>
           {groupedResults.map((group, index) => {
-            const isListResult = group.items.length > 0 && (group.entityType || group.groupTitle.toLowerCase().startsWith("listado:")); // DataTable for explicit entity types or "Listado:"
+            const isListResult = group.items.length > 0 && (group.entityType || group.groupTitle.toLowerCase().startsWith("listado:")); 
             const displayCount = group.count !== undefined ? group.count : group.items.length;
 
             return (
@@ -268,7 +262,6 @@ export const DataPanel: React.FC<DataPanelProps> = ({ database, groupedResults, 
                       formatHeaderFunction={formatHeaderForDisplay}
                     />
                   ) : group.items.length > 0 ? (
-                     // defaultExpanded=true helps EntityDisplay show its content for printing
                     <EntityDisplay items={group.items} defaultExpanded={true} />
                   ) : (
                     <p className="text-sm text-gray-500 dark:text-gray-400 italic">No hay elementos para mostrar en este grupo.</p>
@@ -301,8 +294,6 @@ export const DataPanel: React.FC<DataPanelProps> = ({ database, groupedResults, 
               {expandedEntity === entityType && (
                 <div id={`entity-details-${entityType}`} className="p-3 border-t border-gray-300 dark:border-gray-600">
                   {items.length > 0 ? (
-                    // Note: Printing for these full entity lists via accordion is not implemented with a dedicated button here.
-                    // The print buttons are for 'Resultados de la Consulta'.
                     <EntityDisplay items={items} />
                   ) : (
                     <p className="text-sm text-gray-500 dark:text-gray-400 italic">No hay datos para {displayName}.</p>

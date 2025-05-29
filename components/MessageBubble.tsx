@@ -71,7 +71,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, onViewFul
   const bubbleClasses = isUser
     ? 'bg-green-600 text-white self-end rounded-l-xl rounded-tr-xl'
     : isSystem 
-    ? 'bg-gray-500 dark:bg-gray-600 text-gray-100 dark:text-gray-300 self-center text-xs italic px-3 py-1 rounded-full'
+    ? 'bg-gray-500 dark:bg-gray-600 text-gray-100 dark:text-gray-300 self-center px-4 py-3 rounded-xl shadow-md' // Updated for system messages
     : 'bg-gray-300 dark:bg-gray-700 text-gray-800 dark:text-gray-200 self-start rounded-r-xl rounded-tl-xl'; 
 
   const Icon = isUser ? UserIcon : isAi ? AiIcon : SystemIcon;
@@ -79,7 +79,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, onViewFul
     ? 'bg-green-500' 
     : isAi 
     ? 'bg-blue-500' 
-    : '';
+    : ''; // No icon background for system messages with new bubble style
 
   const handleDownloadCsv = (group: GroupedResult) => {
     triggerCsvDownload(group.items, group.groupTitle, group.entityType);
@@ -258,7 +258,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, onViewFul
             <Icon className="h-5 w-5" />
           </div>
         )}
-        <div className={`p-3 shadow-md ${bubbleClasses} ${isSystem ? '' : 'min-w-[100px]'}`}>
+        <div className={`p-3 shadow-md ${bubbleClasses} ${isSystem ? 'text-center' : 'min-w-[100px]'}`}>
           {message.isLoading && (
             <div className="flex items-center">
               <LoadingIcon className="h-5 w-5 animate-spin mr-2" />
@@ -266,9 +266,9 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, onViewFul
             </div>
           )}
           {!message.isLoading && message.isError && (
-            <div className="flex items-center text-red-600 dark:text-red-300">
-              <ErrorIcon className="h-5 w-5 mr-2" />
-              <span>{message.text}</span>
+            <div className={`flex items-center text-red-600 dark:text-red-300 ${isSystem ? 'justify-center' : ''}`}>
+              <ErrorIcon className="h-5 w-5 mr-2 flex-shrink-0" />
+              <span className={`${isSystem ? 'font-semibold text-base' : 'text-sm'}`}>{message.text}</span>
             </div>
           )}
           {!message.isLoading && !message.isError && (
@@ -276,10 +276,12 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, onViewFul
               {isAi && message.actionType === 'HELP' ? (
                 <MarkdownRenderer markdownText={message.text} />
               ) : (
-                <p className="whitespace-pre-wrap break-words text-sm">{message.text}</p>
+                <p className={`whitespace-pre-wrap break-words ${isSystem ? 'font-semibold text-base' : 'text-sm'}`}>
+                  {message.text}
+                </p>
               )}
               {isAi && message.groupedData && message.groupedData.length > 0 && (
-                <div className="mt-3 pt-2 border-t border-gray-400 dark:border-gray-500 space-y-2">
+                <div className="mt-3 pt-2 border-t border-gray-400 dark:border-gray-500 space-y-2 text-left"> {/* Ensure grouped data is text-left */}
                   {message.groupedData.map((group: GroupedResult, groupIndex: number) => (
                     <div 
                       key={groupIndex} 
@@ -349,7 +351,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, onViewFul
             </>
           )}
            {message.rawLLMResponse && isAi && (
-            <details className="mt-2 text-xs no-print">
+            <details className="mt-2 text-xs no-print text-left"> {/* Ensure details is text-left */}
               <summary className="cursor-pointer text-gray-600 dark:text-gray-400 hover:text-gray-500 dark:hover:text-gray-300">Ver respuesta LLM completa</summary>
               <pre className="mt-1 p-2 bg-gray-50 dark:bg-gray-800 rounded text-gray-700 dark:text-gray-300 text-xs overflow-x-auto max-h-60">
                 {message.rawLLMResponse}
