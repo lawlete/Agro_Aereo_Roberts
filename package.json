@@ -1,5 +1,5 @@
 {
-  "name": "movil-farmerchat-ia-version-10-con-modo-offline",
+  "name": "Gestor-Trabajos-Agro-Aereo-ia-version-1",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -9,15 +9,30 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@google/genai": "^1.0.1",
+    "@vitejs/plugin-react": "^4.5.0",
+    "jspdf": "2.5.1",
+    "jspdf-autotable": "3.8.2",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "@google/genai": "^1.0.1",
-    "jspdf": "2.5.1",
-    "jspdf-autotable": "3.8.2"
+    "vite-plugin-pwa": "^1.0.0"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",
     "typescript": "~5.7.2",
     "vite": "^6.2.0"
-  }
+  },
+  "description": "¡Bienvenido a Gestor Tareas AgreoAereo AI es una aplicación Android que actúa como un asistente virtual para la gestión de registros y tareas en el sector agropecuario, utilizando IA para procesar comandos para gestionar trabajos de campo en lenguaje natural.",
+  "main": "service-worker.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lawlete/Agro_Aereo_Roberts.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/lawlete/Agro_Aereo_Roberts/issues"
+  },
+  "homepage": "https://github.com/lawlete/Agro_Aereo_Roberts#readme"
 }

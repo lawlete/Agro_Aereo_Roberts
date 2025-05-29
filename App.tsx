@@ -227,7 +227,7 @@ const App: React.FC = () => {
       loadTestDatabase(true);
     }
     if (chatMessages.length === 0) {
-        addMessageToChat("¡Bienvenido a FarmerChat AI! Escribe 'Ayuda' para ver ejemplos de comandos o utiliza los botones superiores para gestionar tus datos.", 'system');
+        addMessageToChat("¡Bienvenido a Gestor de Trabajos Agro Aereo Roberts AI! Escribe 'Ayuda' para ver ejemplos de comandos o utiliza los botones superiores para gestionar tus datos.", 'system');
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); 
@@ -714,7 +714,7 @@ const App: React.FC = () => {
           if (showWelcomeBanner) setShowWelcomeBanner(false);
           addMessageToChat('Historial de chat cargado exitosamente.', 'system');
         } else {
-          throw new Error("Formato de archivo de historial inválido. Verifique que el archivo no esté corrupto y que sea un historial de FarmerChat.");
+          throw new Error("Formato de archivo de historial inválido. Verifique que el archivo no esté corrupto y que sea un historial de Gestor de Trabajos Agro Aereo Roberts.");
         }
       } catch (err) {
         console.error("Error cargando historial de chat:", err);
