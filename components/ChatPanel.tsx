@@ -249,6 +249,14 @@ export const ChatPanel = forwardRef<ChatPanelHandles, ChatPanelProps>((
     }
   };
 
+  const handleRepeatCommand = (messageToRepeat: ChatMessage) => {
+    if (messageToRepeat.sender === 'user' && messageToRepeat.text && !isLoading) {
+      // For now, we only re-send the text.
+      // Audio data is not stored in ChatMessage, so audio commands are repeated as text.
+      onSendMessage(messageToRepeat.text);
+    }
+  };
+
   return (
     <div 
       className="flex flex-col h-full w-full shadow-xl dark:border-gray-700 bg-transition"
@@ -265,6 +273,7 @@ export const ChatPanel = forwardRef<ChatPanelHandles, ChatPanelProps>((
             key={msg.id} 
             message={msg} 
             onViewFullScreen={onViewFullScreen} 
+            onRepeatCommand={handleRepeatCommand}
           />
         ))}
         {isLoading && messages[messages.length -1]?.sender !== 'ai' && ( // Show loading bubble if general isLoading is true and last message isn't already an AI loading bubble

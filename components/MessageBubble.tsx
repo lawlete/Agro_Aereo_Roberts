@@ -1,7 +1,7 @@
 
 import React, { useRef } from 'react';
 import { ChatMessage, GroupedResult } from '../types';
-import { UserIcon, AiIcon, SystemIcon, ErrorIcon, LoadingIcon } from './icons/ChatIcons';
+import { UserIcon, AiIcon, SystemIcon, ErrorIcon, LoadingIcon, RepeatIcon } from './icons/ChatIcons';
 import { ExpandIcon } from './icons/ModalControlIcons';
 import { PrintIcon, CsvDownloadIcon } from './icons/ActionIcons';
 import { triggerCsvDownload } from '../services/dbService';
@@ -12,6 +12,7 @@ import { MarkdownRenderer } from './MarkdownRenderer'; // Import the new Markdow
 interface MessageBubbleProps {
   message: ChatMessage;
   onViewFullScreen: (content: FullScreenDataModalContent) => void;
+  onRepeatCommand?: (message: ChatMessage) => void;
 }
 
 const formatValueForBubble = (value: any): string => {
@@ -60,7 +61,7 @@ const renderItemDetails = (item: Record<string, any>): string => {
 };
 
 
-export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, onViewFullScreen }) => {
+export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, onViewFullScreen, onRepeatCommand }) => {
   const isUser = message.sender === 'user';
   const isSystem = message.sender === 'system';
   const isAi = message.sender === 'ai';
@@ -258,7 +259,17 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, onViewFul
             <Icon className="h-5 w-5" />
           </div>
         )}
-        <div className={`p-3 shadow-md ${bubbleClasses} ${isSystem ? 'text-center' : 'min-w-[100px]'}`}>
+        <div className={`relative group p-3 shadow-md ${bubbleClasses} ${isSystem ? 'text-center' : 'min-w-[100px]'}`}>
+          {isUser && onRepeatCommand && (
+            <button
+              onClick={() => onRepeatCommand(message)}
+              className="absolute top-0.5 right-0.5 p-0.5 bg-green-700 hover:bg-green-800 rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity duration-150 no-print"
+              title="Repetir comando"
+              aria-label="Repetir este comando"
+            >
+              <RepeatIcon className="h-3.5 w-3.5" />
+            </button>
+          )}
           {message.isLoading && (
             <div className="flex items-center">
               <LoadingIcon className="h-5 w-5 animate-spin mr-2" />
