@@ -330,7 +330,7 @@ export const ChatPanel = forwardRef<ChatPanelHandles, ChatPanelProps>((
         <span>Instagram: @lawertechnology</span> | 
         <a href="mailto:lawertechnology@gmail.com" className="hover:text-green-500 dark:hover:text-green-400 transition-colors px-1">Email: lawertechnology@gmail.com</a> | 
         <a 
-          href="https://drive.google.com/drive/folders/1kwIgpwTdERhLveb97XGz-Epb1sqdP0HD?usp=drive_link" 
+          href="https://drive.google.com/drive/folders/10xvDYcbHnkLmViOeyBM-1-naFVJeMfLa?usp=drive_link" 
           target="_blank" 
           rel="noopener noreferrer" 
           className="hover:text-green-500 dark:hover:text-green-400 transition-colors px-1"

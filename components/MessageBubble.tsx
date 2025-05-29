@@ -273,7 +273,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, onViewFul
           {message.isLoading && (
             <div className="flex items-center">
               <LoadingIcon className="h-5 w-5 animate-spin mr-2" />
-              <span>Procesando...</span>
+              <span>{message.sender === 'ai' ? 'Gemini está pensando...' : 'Procesando...'}</span>
             </div>
           )}
           {!message.isLoading && message.isError && (
