@@ -1,0 +1,8 @@
+{
+  "name": "Gestor de Trabajos de Agro Aereo Roberts IA Version 10 con modo Offline",
+  "description": "Gestor Tareas AgreoAereo AI es una aplicación Android que actúa como un asistente virtual para la gestión de registros y tareas en el sector agropecuario, utilizando IA para procesar comandos para gestionar trabajos de campo en lenguaje natural",
+  "requestFramePermissions": [
+    "microphone"
+  ],
+  "prompt": ""
+}
